@@ -7,9 +7,9 @@ import (
 type (
 	// Define the object format of log for stackdriver
 	StackdriverLog struct {
-		HttpRequest httpRequest `json:"httpRequest"`
-		Severity    string      `json:"severity"`
-		Timestamp   string      `json:"timestamp"`
+		HttpRequest *httpRequest `json:"httpRequest"`
+		Severity    string       `json:"severity"`
+		Timestamp   string       `json:"timestamp"`
 	}
 
 	httpRequest struct {

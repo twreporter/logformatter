@@ -33,7 +33,7 @@ func NewGinLogFormatter(Options ...func(*GinLog)) gin.LogFormatter {
 
 	return func(params gin.LogFormatterParams) string {
 		sLog := StackdriverLog{
-			HttpRequest: httpRequest{
+			HttpRequest: &httpRequest{
 				RequestMethod: params.Method,
 				RequestUrl:    params.Request.URL.String(),
 				Status:        params.StatusCode,
