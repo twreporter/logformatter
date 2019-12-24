@@ -1,4 +1,4 @@
-module github.com/twreporter/go-logformatter
+module github.com/twreporter/logformatter
 
 go 1.12
 
