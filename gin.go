@@ -8,24 +8,24 @@ import (
 )
 
 type (
-	// GinLogConfig represents the configuration to setup gin logger
-	GinLogConfig struct {
+	// GinLog represents the configuration to setup gin logger
+	GinLog struct {
 		Severity Severity
 	}
 )
 
-var defaultGinLogConfig = GinLogConfig{Severity: Debug}
+var defaultGinLog = GinLog{Severity: Info}
 
 // GinLogSeverity sets the severity for the GinLog
-func GinLogSeverity(s Severity) func(*GinLogConfig) {
-	return func(g *GinLogConfig) {
+func GinLogSeverity(s Severity) func(*GinLog) {
+	return func(g *GinLog) {
 		g.Severity = s
 	}
 }
 
 // NewGinLogFormatter takes zero or one GinOption function and applis to GinLog.
-func NewGinLogFormatter(Options ...func(*GinLogConfig)) gin.LogFormatter {
-	config := defaultGinLogConfig
+func NewGinLogFormatter(Options ...func(*GinLog)) gin.LogFormatter {
+	config := defaultGinLog
 
 	for _, o := range Options {
 		o(&config)

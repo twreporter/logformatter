@@ -12,18 +12,18 @@ import (
 func TestGinLogFormatter(t *testing.T) {
 	cases := []struct {
 		name   string
-		option func(*GinLogConfig)
+		option func(*GinLog)
 		expect Severity
 	}{
 		{
-			name:   "Test default severity(Debug)",
+			name:   "Test default severity(Info)",
 			option: nil,
-			expect: Debug,
+			expect: Info,
 		},
 		{
 			name:   "Test set gin log severity",
-			option: GinLogSeverity(Info),
-			expect: Info,
+			option: GinLogSeverity(Warning),
+			expect: Warning,
 		},
 	}
 
