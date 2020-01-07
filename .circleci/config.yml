@@ -1,0 +1,15 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.12.9
+
+    working_directory: ~/src/
+
+    steps:
+      - checkout
+
+      - run:
+          name: Run test
+          command: |
+            go test -v -cover ./...
