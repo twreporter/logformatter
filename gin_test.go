@@ -5,29 +5,27 @@ import (
 	"fmt"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/genproto/googleapis/logging/type"
+	"google.golang.org/genproto/googleapis/logging/v2"
 )
 
 func TestNewGinLogFormatter(t *testing.T) {
 	for _, c := range [...]struct {
 		name   string
-		expect StackdriverLog
+		expect logging.LogEntry
 	}{
 		{
 			name: "Test gin log contains required entries",
-			expect: StackdriverLog{
+			expect: logging.LogEntry{
 				// Fill up default zero entries
-				HttpRequest: &httpRequest{
-					Protocol:     "HTTP/1.1",
-					Latency:      fmt.Sprintf("%fs", float64(0)),
-					RequestUrl:   "http://test.url/",
-					ResponseSize: fmt.Sprintf("%d", 0),
+				HttpRequest: &ltype.HttpRequest{
+					Protocol:   "HTTP/1.1",
+					RequestUrl: "http://test.url/",
 				},
-				Severity:  defaultGinLog.Severity.String(),
-				Timestamp: time.Time{}.String(), // default empty value
+				Severity: defaultGinLog.Severity,
 			},
 		},
 	} {
@@ -48,17 +46,17 @@ func TestSetGinLogSeverity(t *testing.T) {
 	cases := []struct {
 		name   string
 		option func(*GinLog)
-		expect Severity
+		expect ltype.LogSeverity
 	}{
 		{
 			name:   "Test default severity(Info)",
 			option: nil,
-			expect: Info,
+			expect: ltype.LogSeverity_INFO,
 		},
 		{
 			name:   "Test set gin log severity",
-			option: GinLogSeverity(Warning),
-			expect: Warning,
+			option: GinLogSeverity(ltype.LogSeverity_WARNING),
+			expect: ltype.LogSeverity_WARNING,
 		},
 	}
 
@@ -75,7 +73,7 @@ func TestSetGinLogSeverity(t *testing.T) {
 
 			out := formatter(gin.LogFormatterParams{
 				Request: mockRequest})
-			assert.Contains(t, out, fmt.Sprintf(`"severity":"%s"`, c.expect.String()))
+			assert.Contains(t, out, fmt.Sprintf(`"severity":%d`, c.expect))
 		})
 	}
 }

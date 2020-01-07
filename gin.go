@@ -2,22 +2,24 @@ package logformatter
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang/protobuf/ptypes"
+	"google.golang.org/genproto/googleapis/logging/type"
+	"google.golang.org/genproto/googleapis/logging/v2"
 )
 
 type (
 	// GinLog represents the configuration to setup gin logger
 	GinLog struct {
-		Severity Severity
+		Severity ltype.LogSeverity
 	}
 )
 
-var defaultGinLog = GinLog{Severity: Info}
+var defaultGinLog = GinLog{Severity: ltype.LogSeverity_INFO}
 
 // GinLogSeverity sets the severity for the GinLog
-func GinLogSeverity(s Severity) func(*GinLog) {
+func GinLogSeverity(s ltype.LogSeverity) func(*GinLog) {
 	return func(g *GinLog) {
 		g.Severity = s
 	}
@@ -32,19 +34,26 @@ func NewGinLogFormatter(Options ...func(*GinLog)) gin.LogFormatter {
 	}
 
 	return func(params gin.LogFormatterParams) string {
-		sLog := StackdriverLog{
-			HttpRequest: &httpRequest{
+		sLog := logging.LogEntry{
+			HttpRequest: &ltype.HttpRequest{
 				RequestMethod: params.Method,
 				RequestUrl:    params.Request.URL.String(),
-				Status:        params.StatusCode,
+				Status:        int32(params.StatusCode),
 				UserAgent:     params.Request.UserAgent(),
 				RemoteIp:      params.ClientIP,
-				Latency:       fmt.Sprintf("%fs", params.Latency.Seconds()),
 				Protocol:      params.Request.Proto,
-				ResponseSize:  fmt.Sprintf("%d", params.BodySize),
+				ResponseSize:  int64(params.BodySize),
 			},
-			Severity:  config.Severity.String(),
-			Timestamp: params.TimeStamp.String(),
+			Severity: config.Severity,
+		}
+
+		if !params.TimeStamp.IsZero() {
+			ts, _ := ptypes.TimestampProto(params.TimeStamp)
+			sLog.Timestamp = ts
+		}
+
+		if int64(params.Latency) != 0 {
+			sLog.HttpRequest.Latency = ptypes.DurationProto(params.Latency)
 		}
 
 		result, err := json.Marshal(sLog)
@@ -53,6 +62,6 @@ func NewGinLogFormatter(Options ...func(*GinLog)) gin.LogFormatter {
 			return err.Error() + "\n"
 		}
 
-		return fmt.Sprintf("%s\n", string(result))
+		return string(result) + "\n"
 	}
 }

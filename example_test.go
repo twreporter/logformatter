@@ -3,6 +3,7 @@ package logformatter_test
 import (
 	"github.com/gin-gonic/gin"
 	f "github.com/twreporter/logformatter"
+	"google.golang.org/genproto/googleapis/logging/type"
 )
 
 func ExampleNewGinLogFormatter() {
@@ -13,7 +14,7 @@ func ExampleNewGinLogFormatter() {
 
 	// customize log severity here
 	// default to Info
-	formatter := f.NewGinLogFormatter(f.GinLogSeverity(f.Debug))
+	formatter := f.NewGinLogFormatter(f.GinLogSeverity(ltype.LogSeverity_DEBUG))
 
 	// config gin with the customize logger
 	r.Use(gin.LoggerWithFormatter(formatter))
