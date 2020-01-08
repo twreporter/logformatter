@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/pkg/errors"
@@ -39,7 +41,7 @@ func TestFormatStack(t *testing.T) {
 			expect: &frame{
 				funcName: "github.com/twreporter/logformatter.TestFormatStack",
 				file:     pwd + "/logrus_test.go",
-				line:     38,
+				line:     40,
 			},
 		},
 	} {
@@ -56,14 +58,16 @@ func TestFormatStack(t *testing.T) {
 				assert.Regexp(t, regexp.MustCompile(`goroutine [1-9]+ \[running\]:`), string(goroutineState))
 
 				// Next, validate if the stack frame format follow
-				// [function]\n\t[file]:[line] [function address]
+				// [function]\n\t[file]:[line] +[function address]
 				segments := bytes.Split(rs[bytes.Index(rs, []byte("\n"))+1:], []byte("\n"))
 				firstStack := []byte(string(segments[0]) + "\n" + string(segments[1]))
 				s := bytes.Split(firstStack, []byte(" "))
 
 				assert.Equal(t, fmt.Sprintf("%s()\n\t%s:%d", c.expect.funcName, c.expect.file, c.expect.line), string(s[0]))
-				assert.Regexp(t, regexp.MustCompile(`0x[0-9a-z]{7}`), string(s[1]))
 
+				assert.Equal(t, strings.HasPrefix(string(s[1]), "+0x"), true)
+				_, err := strconv.ParseInt(string(s[1][3:]), 16, 64)
+				assert.Nil(t, err)
 			}
 		})
 	}
