@@ -1,7 +1,12 @@
 package logformatter_test
 
 import (
+	"os"
+
+	"github.com/pkg/errors"
+
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 	f "github.com/twreporter/logformatter"
 	"google.golang.org/genproto/googleapis/logging/type"
 )
@@ -24,4 +29,17 @@ func ExampleNewGinLogFormatter() {
 	})
 
 	r.Run(":8080")
+}
+
+func ExampleNewStackdriverFormatter() {
+	log.SetOutput(os.Stdout)
+
+	// Config stackdriver formatter for example service
+	log.SetFormatter(f.NewStackdriverFormatter("example", "test"))
+
+	// Log message with info severity
+	log.Info("message")
+
+	// Format the error objecgt in runtime.Stack shape
+	log.Error(f.FormatStack(errors.Errorf("error")))
 }
