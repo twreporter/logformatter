@@ -102,7 +102,7 @@ func TestFormat(t *testing.T) {
 		f := NewStackdriverFormatter("Mock service", "test")
 		t.Run(c.name, func(t *testing.T) {
 			out, _ := f.Format(&c.entry)
-			assert.Contains(t, string(out), fmt.Sprintf(`"severity":%d`, c.expectSeverity))
+			assert.Contains(t, string(out), fmt.Sprintf(`"severity":"%s"`, c.expectSeverity))
 			assert.Contains(t, string(out), fmt.Sprintf(`"message":"%s"`, c.expectMessage))
 		})
 	}
