@@ -20,6 +20,7 @@ func (s *Stackdriver) MarshalJSON() ([]byte, error) {
 		m jsonpb.Marshaler
 	)
 
+	// unwrap aims to remove the double quote after the component of stackdriver marshalled.
 	unwrap := func(m []byte) []byte {
 		if m == nil {
 			return nil

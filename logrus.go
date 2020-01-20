@@ -15,19 +15,23 @@ import (
 
 type (
 	// Interface for inspecting error objects recursively
-	// Ref: https://github.com/pkg/errors/blob/7f95ac13edff643b8ce5398b6ccab125f8a20c1a/errors.go#L30-L53
+	// Ref: https://godoc.org/github.com/pkg/errors#hdr-Retrieving_the_cause_of_an_error
 	causer interface {
 		Cause() error
 	}
 
 	// Interface for retrieving stack frame for each error object
-	// Ref: https://github.com/pkg/errors/blob/7f95ac13edff643b8ce5398b6ccab125f8a20c1a/errors.go#L68-L73
+	// Ref: https://godoc.org/github.com/pkg/errors#hdr-Retrieving_the_stack_trace_of_an_error_or_wrapper
 	stackTracer interface {
 		StackTrace() errors.StackTrace
 	}
 )
 
 // Adapt from https://github.com/googleapis/google-cloud-go/issues/1084#issuecomment-474565019
+// FormatStack formats the error object to adhere to runtime.Stack required by the stackdriver errorreporting
+// (ref: https://cloud.google.com/error-reporting/reference/rest/v1beta1/projects.events/report#ReportedErrorEvent)
+// FormatStack should accept the error implements stackTracer interface or the stackframe cannot be retrieved (i.e, return nil).
+// Suggest using with pkg/errors to create the error object.
 func FormatStack(err error) (buffer []byte) {
 	if err == nil {
 		return nil
@@ -122,6 +126,8 @@ func convertLevelToLogSeverity(lvl logrus.Level) ltype.LogSeverity {
 	return ltype.LogSeverity_ERROR
 }
 
+// As the goroutine ID and status cannot be retrieved through the public API,
+// capture these information from the first line of runtime.Stack().
 func getGoroutineState() string {
 	stack := make([]byte, 64)
 	stack = stack[:runtime.Stack(stack, false)]
