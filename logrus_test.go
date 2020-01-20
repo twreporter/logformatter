@@ -55,7 +55,7 @@ func TestFormatStack(t *testing.T) {
 				rs := out
 				goroutineState := rs[:bytes.Index(rs, []byte("\n"))]
 				// Validate first line contains goroutine state information
-				assert.Regexp(t, regexp.MustCompile(`goroutine [1-9]+ \[running\]:`), string(goroutineState))
+				assert.Regexp(t, regexp.MustCompile(`goroutine [1-9][0-9]* \[running\]:`), string(goroutineState))
 
 				// Next, validate if the stack frame format follow
 				// [function]\n\t[file]:[line] +[function address]
