@@ -15,18 +15,18 @@ import (
 func TestNewGinLogFormatter(t *testing.T) {
 	for _, c := range [...]struct {
 		name   string
-		expect logging.LogEntry
+		expect Stackdriver
 	}{
 		{
 			name: "Test gin log contains required entries",
-			expect: logging.LogEntry{
+			expect: Stackdriver{LogEntry: logging.LogEntry{
 				// Fill up default zero entries
 				HttpRequest: &ltype.HttpRequest{
 					Protocol:   "HTTP/1.1",
 					RequestUrl: "http://test.url/",
 				},
 				Severity: defaultGinLog.Severity,
-			},
+			}},
 		},
 	} {
 		t.Run(c.name, func(t *testing.T) {
@@ -37,7 +37,7 @@ func TestNewGinLogFormatter(t *testing.T) {
 			out := formatter(gin.LogFormatterParams{Request: mockRequest})
 
 			expectJson, _ := json.Marshal(&c.expect)
-			assert.JSONEq(t, out, string(expectJson))
+			assert.JSONEq(t, string(expectJson), out)
 		})
 	}
 }
@@ -73,7 +73,7 @@ func TestSetGinLogSeverity(t *testing.T) {
 
 			out := formatter(gin.LogFormatterParams{
 				Request: mockRequest})
-			assert.Contains(t, out, fmt.Sprintf(`"severity":%d`, c.expect))
+			assert.Contains(t, out, fmt.Sprintf(`"severity":"%s"`, c.expect))
 		})
 	}
 }

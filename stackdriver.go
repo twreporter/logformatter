@@ -34,13 +34,19 @@ func (s *Stackdriver) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	buffer.WriteString(string(unwrap([]byte(entry))))
+
+	if !isEmptyJson(entry) {
+		buffer.WriteString(string(unwrap([]byte(entry))))
+	}
 
 	report, err := m.MarshalToString(&s.ErrorEvent)
 	if err != nil {
 		return nil, err
 	}
-	buffer.WriteString("," + string(unwrap([]byte(report))))
+
+	if !isEmptyJson(report) {
+		buffer.WriteString("," + string(unwrap([]byte(report))))
+	}
 
 	if s.Payload != nil {
 		p, err := json.Marshal(s.Payload)
@@ -48,8 +54,15 @@ func (s *Stackdriver) MarshalJSON() ([]byte, error) {
 			return nil, err
 		}
 
-		buffer.WriteString(",\"payload\":" + string(p))
+		if !isEmptyJson(string(p)) {
+			buffer.WriteString(",\"payload\":" + string(p))
+		}
 	}
+
 	buffer.WriteString("}")
 	return buffer.Bytes(), nil
+}
+
+func isEmptyJson(s string) bool {
+	return bytes.Equal([]byte(s), []byte("{}"))
 }

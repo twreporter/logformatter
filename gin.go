@@ -34,17 +34,19 @@ func NewGinLogFormatter(Options ...func(*GinLog)) gin.LogFormatter {
 	}
 
 	return func(params gin.LogFormatterParams) string {
-		sLog := logging.LogEntry{
-			HttpRequest: &ltype.HttpRequest{
-				RequestMethod: params.Method,
-				RequestUrl:    params.Request.URL.String(),
-				Status:        int32(params.StatusCode),
-				UserAgent:     params.Request.UserAgent(),
-				RemoteIp:      params.ClientIP,
-				Protocol:      params.Request.Proto,
-				ResponseSize:  int64(params.BodySize),
+		sLog := Stackdriver{
+			LogEntry: logging.LogEntry{
+				HttpRequest: &ltype.HttpRequest{
+					RequestMethod: params.Method,
+					RequestUrl:    params.Request.URL.String(),
+					Status:        int32(params.StatusCode),
+					UserAgent:     params.Request.UserAgent(),
+					RemoteIp:      params.ClientIP,
+					Protocol:      params.Request.Proto,
+					ResponseSize:  int64(params.BodySize),
+				},
+				Severity: config.Severity,
 			},
-			Severity: config.Severity,
 		}
 
 		if !params.TimeStamp.IsZero() {
@@ -56,7 +58,7 @@ func NewGinLogFormatter(Options ...func(*GinLog)) gin.LogFormatter {
 			sLog.HttpRequest.Latency = ptypes.DurationProto(params.Latency)
 		}
 
-		result, err := json.Marshal(sLog)
+		result, err := json.Marshal(&sLog)
 
 		if err != nil {
 			return err.Error() + "\n"
